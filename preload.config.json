@@ -1,0 +1,10 @@
+{
+	"webroot": "../",
+	"outputDir": ".",
+	"entryPoints": ["/oscillator/src/main"],
+	"html": [{
+		"main": "/oscillator/src/main",
+		"html": "/oscillator/index.html",
+		"template": "./.templates/index.html"
+	}]
+}

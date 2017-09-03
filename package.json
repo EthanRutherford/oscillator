@@ -1,0 +1,17 @@
+{
+  "name": "oscillator",
+  "version": "1.0.0",
+  "description": "",
+  "main": "",
+  "dependencies": {
+  },
+  "devDependencies": {
+    "pre-req": "^1.4.3"
+  },
+  "scripts": {
+    "build": "preload build",
+    "start": "start http-server ../"
+  },
+  "author": "",
+  "license": "ISC"
+}

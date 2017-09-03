@@ -1,0 +1,66 @@
+body {
+	margin: 0;
+}
+
+.oscilloscope {
+	margin: 10px 0 0 10px;
+}
+
+.waveform {
+	margin: 10px 0 0 10px;
+}
+
+.key-row {
+	position: relative;
+	margin: 10px;
+	cursor: default;
+	user-select: none;
+}
+
+.white-key {
+	display: inline-block;
+	position: relative;
+	border: 1px solid black;
+	border-radius: 0 0 4px 4px;
+	width: 40px;
+	height: 80px;
+	background-color: white;
+	color: black;
+	z-index: 0;
+}
+
+.white-key.pressed {
+	background-color: hsl(0, 0%, 90%);
+}
+
+.white-key div {
+	position: absolute;
+	top: 75%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+}
+
+.black-key {
+	display: inline-block;
+	position: absolute;
+	top: 0;
+	border: 1px solid black;
+	border-radius: 0 0 4px 4px;
+	width: 20px;
+	height: 40px;
+	background-color: black;
+	color: white;
+	transform: translateX(-10px);
+	z-index: 1;
+}
+
+.black-key.pressed {
+	background-color: hsl(0, 0%, 30%);
+}
+
+.black-key div {
+	position: absolute;
+	top: 60%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+}
