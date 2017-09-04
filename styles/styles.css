@@ -29,6 +29,11 @@ body {
 	z-index: 0;
 }
 
+.white-key:hover {
+	background-color: hsl(240, 30%, 95%);
+	cursor: pointer;
+}
+
 .white-key.pressed {
 	background-color: hsl(0, 0%, 90%);
 }
@@ -52,6 +57,11 @@ body {
 	color: white;
 	transform: translateX(-10px);
 	z-index: 1;
+}
+
+.black-key:hover {
+	background-color: hsl(240, 30%, 30%);
+	cursor: pointer;
 }
 
 .black-key.pressed {
