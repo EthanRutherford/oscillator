@@ -1,22 +1,45 @@
+const {j, Controller} = require("jenny-js");
 require("../styles/styles.css");
 const Osc3x = require("./3xosc");
 const {drawOscilloscope, draw3xOsc} = require("./visualize");
-const {setupController} = require("./controller");
+const Keyboard = require("./keyboard");
 
 const audioContext = new AudioContext();
 
-const analyser = audioContext.createAnalyser();
-analyser.fftSize = 1024;
-analyser.connect(audioContext.destination);
+class App extends Controller {
+	init() {
+		this.analyser = audioContext.createAnalyser();
+		this.analyser.fftSize = 1024;
+		this.analyser.connect(audioContext.destination);
 
-const oscillator = new Osc3x(audioContext, analyser);
-oscillator.osc1 = {type: "sawtooth"};
-oscillator.osc2 = {type: "square"};
-oscillator.osc3 = {type: "sine"};
+		this.oscillator = new Osc3x(audioContext, this.analyser);
+		this.oscillator.osc1 = {type: "sawtooth"};
+		this.oscillator.osc2 = {type: "square"};
+		this.oscillator.osc3 = {type: "sine"};
 
-const canvas = document.querySelector("canvas");
-const canvasContext = canvas.getContext("2d");
+		return j({div: 0}, [
+			j({canvas: {
+				class: "oscilloscope",
+				width: 800,
+				height: 100,
+				ref: (ref) => this.canvas = ref,
+			}}),
+			//TODO: replace with editor
+			j({img: {
+				class: "waveform",
+				ref: (ref) => this.image = ref,
+			}}),
+			j([Keyboard, {oscillator: this.oscillator}]),
+		]);
+	}
+	didMount() {
+		const canvasContext = this.canvas.getContext("2d");
 
-drawOscilloscope(canvas, canvasContext, analyser);
-document.querySelector("img").src = draw3xOsc(oscillator);
-setupController(oscillator);
+		drawOscilloscope(this.canvas, canvasContext, this.analyser);
+
+		//TODO: remove
+		this.image.src = draw3xOsc(this.oscillator);
+	}
+}
+
+document.body.content = [j([App])];

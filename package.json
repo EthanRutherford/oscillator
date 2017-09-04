@@ -1,17 +1,25 @@
 {
   "name": "oscillator",
   "version": "1.0.0",
-  "description": "",
   "main": "",
-  "dependencies": {
-  },
+  "dependencies": {},
   "devDependencies": {
+    "jenny-js": "^1.0.3",
     "pre-req": "^1.4.3"
   },
   "scripts": {
     "build": "preload build",
     "start": "start http-server ../"
   },
-  "author": "",
-  "license": "ISC"
+  "author": "Ethan Rutherford",
+  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/EthanRutherford/oscillator.git"
+  },
+  "bugs": {
+    "url": "https://github.com/EthanRutherford/oscillator/issues"
+  },
+  "homepage": "https://github.com/EthanRutherford/oscillator#readme",
+  "description": ""
 }

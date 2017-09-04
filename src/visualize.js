@@ -12,7 +12,7 @@ const funcs = {
 		return ((val / Math.PI) % 2) - 1;
 	},
 	triangle(val) {
-		return 0; //TODO
+		return Math.abs(((val / Math.PI) + 1.5) % 2 - 1) * 2 - 1;
 	},
 };
 

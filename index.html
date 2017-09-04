@@ -3,13 +3,9 @@
 		<title>Oscillator</title>
 
 <script id="pre-req" src="/oscillator/preload_modules/preload.js" async></script>
-<script>document.getElementById("pre-req").onload = () => {preload.define({"files":{"oscillator":{"src":{"main.js":{"/deps":["/oscillator/styles/styles.css","/oscillator/src/3xosc.js","/oscillator/src/keyboard.js","/oscillator/src/visualize.js","/oscillator/src/controller.js"]},"controller.js":{"/deps":[]},"visualize.js":{"/deps":[]},"keyboard.js":{"/deps":[]},"3xosc.js":{"/deps":["/oscillator/src/sound-util.js"]},"sound-util.js":{"/deps":[]}},"styles":{"styles.css":{"/deps":[]}}}},"packages":{},"outputDir":"/oscillator/"});preload.main("/oscillator/src/main.js")};</script>
+<script>document.getElementById("pre-req").onload = () => {preload.define({"files":{"oscillator":{"src":{"main.js":{"/deps":["jenny-js","/oscillator/styles/styles.css","/oscillator/src/3xosc.js","/oscillator/src/visualize.js","/oscillator/src/keyboard.js"]},"keyboard.js":{"/deps":["jenny-js","/oscillator/src/key-util.js"]},"key-util.js":{"/deps":[]},"visualize.js":{"/deps":[]},"3xosc.js":{"/deps":["/oscillator/src/sound-util.js"]},"sound-util.js":{"/deps":[]}},"styles":{"styles.css":{"/deps":[]}}}},"packages":{"jenny-js":{"/deps":[]}},"outputDir":"/oscillator/"});preload.main("/oscillator/src/main.js")};</script>
 	</head>
 	<body>
-		<canvas class="oscilloscope" width="800" height="100"></canvas>
-		<img class="waveform"></img>
-		<div id="top-row" class="key-row"></div>
-		<div id="bottom-row" class="key-row"></div>
 	</body>
 </html>
 	
