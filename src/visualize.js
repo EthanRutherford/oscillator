@@ -26,11 +26,11 @@ module.exports = {
 
 			analyser.getFloatTimeDomainData(dataArray);
 
-			context.fillStyle = "rgb(200, 200, 200)";
+			context.fillStyle = "rgb(0, 0, 0)";
 			context.fillRect(0, 0, canvas.width, canvas.height);
 
 			context.lineWidth = 2;
-			context.strokeStyle = "rgb(0, 0, 0)";
+			context.strokeStyle = "rgb(220, 255, 220)";
 			context.beginPath();
 
 			const sliceWidth = canvas.width * 1.0 / analyser.fftSize;
@@ -56,11 +56,11 @@ module.exports = {
 		draw();
 	},
 	draw3xOsc(oscillator) {
-		imageContext.fillStyle = "rgb(200, 200, 200)";
+		imageContext.fillStyle = "rgb(0, 0, 0)";
 		imageContext.fillRect(0, 0, imageCanvas.width, imageCanvas.height);
 
 		imageContext.lineWidth = 2;
-		imageContext.strokeStyle = "rgb(0, 0, 0)";
+		imageContext.strokeStyle = "rgb(220, 255, 220)";
 
 		imageContext.beginPath();
 
@@ -79,7 +79,7 @@ module.exports = {
 			const wav3 = funcs[osc3.type](amt * Math.pow(2, osc3.octave + 2));
 
 			const combine = wav1 * gain1 + wav2 * gain2 + wav3 * gain3;
-			const value = combine * 20;
+			const value = combine * oscillator.gain * 40;
 			const y = -value + imageCanvas.height / 2;
 
 			if (i === 0) {

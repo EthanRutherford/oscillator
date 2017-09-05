@@ -3,8 +3,9 @@ const {render} = require("react-dom");
 const j = require("react-jenny");
 require("../styles/styles.css");
 const Osc3x = require("./3xosc");
-const {drawOscilloscope, draw3xOsc} = require("./visualize");
+const {drawOscilloscope} = require("./visualize");
 const Keyboard = require("./keyboard");
+const OscEditor = require("./osc-editor");
 
 const audioContext = new AudioContext();
 
@@ -16,33 +17,51 @@ class App extends Component {
 		this.analyser.fftSize = 1024;
 		this.analyser.connect(audioContext.destination);
 
-		this.oscillator = new Osc3x(audioContext, this.analyser);
-		this.oscillator.osc1 = {type: "sawtooth"};
-		this.oscillator.osc2 = {type: "square"};
-		this.oscillator.osc3 = {type: "sine"};
+		const oscillator = new Osc3x(audioContext, this.analyser);
+		oscillator.osc1 = {type: "sawtooth"};
+		oscillator.osc2 = {type: "square"};
+		oscillator.osc3 = {type: "sine"};
+
+		this.state = {
+			oscillator: oscillator,
+		};
 	}
 	componentDidMount() {
 		const canvasContext = this.canvas.getContext("2d");
-
 		drawOscilloscope(this.canvas, canvasContext, this.analyser);
-
-		//TODO: remove
-		this.image.src = draw3xOsc(this.oscillator);
+	}
+	updateOsc3x(data) {
+		if (data.gain != null) {
+			this.state.oscillator.gain = data.gain;
+		}
+		if (data.osc1 != null) {
+			this.state.oscillator.osc1 = data.osc1;
+		}
+		if (data.osc2 != null) {
+			this.state.oscillator.osc2 = data.osc2;
+		}
+		if (data.osc3 != null) {
+			this.state.oscillator.osc3 = data.osc3;
+		}
+		this.setState({});
 	}
 	render() {
-		return j("div", [
-			j({canvas: {
-				className: "oscilloscope",
-				width: 800,
-				height: 100,
-				ref: (ref) => this.canvas = ref,
-			}}),
-			//TODO: replace with editor
-			j({img: {
-				className: "waveform",
-				ref: (ref) => this.image = ref,
-			}}),
-			j([Keyboard, {oscillator: this.oscillator}]),
+		return j({div: {className: "content"}}, [
+			j({div: {className: "top-content"}}, [
+				j({canvas: {
+					className: "oscilloscope",
+					width: 800,
+					height: 100,
+					ref: (ref) => this.canvas = ref,
+				}}),
+				j([OscEditor, {
+					oscillator: this.state.oscillator,
+					updateOsc3x: this.updateOsc3x.bind(this),
+				}]),
+			]),
+			j({div: {className: "bottom-content"}}, [
+				j([Keyboard, {oscillator: this.state.oscillator}]),
+			]),
 		]);
 	}
 }

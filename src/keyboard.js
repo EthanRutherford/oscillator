@@ -1,4 +1,4 @@
-const {Component} = require("react");
+const {Component, PureComponent} = require("react");
 const PropTypes = require("prop-types");
 const j = require("react-jenny");
 const {merge} = require("./util");
@@ -42,11 +42,11 @@ class Key extends Component {
 }
 
 Key.propTypes = {
-	className: PropTypes.string,
-	keyName: PropTypes.string,
-	keyState: PropTypes.bool,
-	start: PropTypes.func,
-	stop: PropTypes.func,
+	className: PropTypes.string.isRequired,
+	keyName: PropTypes.string.isRequired,
+	keyState: PropTypes.bool.isRequired,
+	start: PropTypes.func.isRequired,
+	stop: PropTypes.func.isRequired,
 };
 
 class KeyRow extends Component {
@@ -66,18 +66,20 @@ class KeyRow extends Component {
 }
 
 KeyRow.propTypes = {
-	row: PropTypes.string,
-	keyState: PropTypes.objectOf(PropTypes.bool),
-	start: PropTypes.func,
-	stop: PropTypes.func,
+	row: PropTypes.string.isRequired,
+	keyState: PropTypes.objectOf(PropTypes.bool).isRequired,
+	start: PropTypes.func.isRequired,
+	stop: PropTypes.func.isRequired,
 };
 
-class Keyboard extends Component {
+class Keyboard extends PureComponent {
 	constructor(...args) {
 		super(...args);
 		this.state = {
-			keyState: {
-			},
+			keyState: [...bothRows].reduce((obj, x) => {
+				obj[x] = false;
+				return obj;
+			}, {}),
 			sources: {},
 		};
 		this._mouseUp = this.mouseUp.bind(this);
@@ -189,7 +191,7 @@ class Keyboard extends Component {
 }
 
 Keyboard.propTypes = {
-	oscillator: PropTypes.instanceOf(Osc3x),
+	oscillator: PropTypes.instanceOf(Osc3x).isRequired,
 };
 
 module.exports = Keyboard;

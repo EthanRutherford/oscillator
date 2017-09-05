@@ -25,24 +25,24 @@ module.exports = class Osc3x {
 		return Object.freeze(Object.assign({}, this._osc1));
 	}
 	set osc1({type, octave}) {
-		if (type) this._osc1.type = type;
-		if (octave) this._osc1.octave = octave;
+		if (type != null) this._osc1.type = type;
+		if (octave != null) this._osc1.octave = octave;
 	}
 	get osc2() {
 		return Object.freeze(Object.assign({}, this._osc2));
 	}
 	set osc2({type, mixRatio, octave}) {
-		if (type) this._osc2.type = type;
-		if (mixRatio) this._osc2.mixRatio = mixRatio;
-		if (octave) this._osc2.octave = octave;
+		if (type != null) this._osc2.type = type;
+		if (mixRatio != null) this._osc2.mixRatio = mixRatio;
+		if (octave != null) this._osc2.octave = octave;
 	}
 	get osc3() {
 		return Object.freeze(Object.assign({}, this._osc3));
 	}
 	set osc3({type, mixRatio, octave}) {
-		if (type) this._osc3.type = type;
-		if (mixRatio) this._osc3.mixRatio = mixRatio;
-		if (octave) this._osc3.octave = octave;
+		if (type != null) this._osc3.type = type;
+		if (mixRatio != null) this._osc3.mixRatio = mixRatio;
+		if (octave != null) this._osc3.octave = octave;
 	}
 	get gain() {
 		return this._gain;
