@@ -9,7 +9,7 @@ const funcs = {
 		return Math.floor(val / Math.PI) % 2 ? -1 : 1;
 	},
 	sawtooth(val) {
-		return ((val / Math.PI) % 2) - 1;
+		return (((val / Math.PI) + 1) % 2) - 1;
 	},
 	triangle(val) {
 		return Math.abs(((val / Math.PI) + 1.5) % 2 - 1) * 2 - 1;
