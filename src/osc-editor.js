@@ -6,6 +6,8 @@ const {draw3xOsc} = require("./visualize");
 
 const clamp = (val, min, max) => Math.min(Math.max(min, val), max);
 
+const stopProp = (event) => event.stopPropagation();
+
 class OscBar extends Component {
 	setType(event) {
 		this.props.update({type: event.target.value});
@@ -36,6 +38,7 @@ class OscBar extends Component {
 				step: 1,
 				value: this.props.settings.octave,
 				onChange: this.setOctave.bind(this),
+				onKeyDown: stopProp,
 			}}),
 			this.props.settings.mixRatio != null ?
 			j({input: {
@@ -45,6 +48,7 @@ class OscBar extends Component {
 				step: .01,
 				value: this.props.settings.mixRatio,
 				onChange: this.setMix.bind(this),
+				onKeyDown: stopProp,
 			}}) :
 			j({input: {
 				type: "number",
@@ -52,6 +56,7 @@ class OscBar extends Component {
 				max: 1,
 				step: .01,
 				style: {visibility: "hidden"},
+				onKeyDown: stopProp,
 			}}),
 		]);
 	}
@@ -86,6 +91,7 @@ class OscEditor extends Component {
 					step: .01,
 					value: this.props.oscillator.gain,
 					onChange: this.setGain.bind(this),
+					onKeyDown: stopProp,
 				}}),
 			]),
 			j({div: {className: "editor-content"}}, [
