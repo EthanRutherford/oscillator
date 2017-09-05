@@ -1,205 +1,195 @@
-const {j, Controller} = require("jenny-js");
+const {Component} = require("react");
+const PropTypes = require("prop-types");
+const j = require("react-jenny");
+const {merge} = require("./util");
 const {toUnModified, toneFromKey} = require("./key-util");
+const Osc3x = require("./3xosc");
 
+const keyColors = [0, 1, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0, 0, 1, 0, 1, 0];
 const topRow = "q2w3er5t6y7ui9o0p";
 const bottomRow = "zsxdcvgbhnjm,l.;/";
+const bothRows = topRow + bottomRow;
 
-const currentKeys = {};
-
-function findController(element) {
-	do {
-		if (element.controller) return element.controller;
-	} while ((element = element.parentElement));
-	return null;
-}
-
-class Key extends Controller {
-	init() {
-		const ref = (ref) => {
-			this._keyDiv = ref;
-			this.props.setRef(ref.controller, this.key);
-		};
-
-		return j({div: {
-			class: this.props.class,
-			onmousedown: () => this.onMouseDown(),
-			onmouseenter: () => this.onMouseEnter(),
-			ref,
-		}}, [
-			j({div: 0}, [this.key]),
-		]);
+class Key extends Component {
+	onMouseDown(event) {
+		if (event.button === 0) {
+			this.props.start(this.props.keyName, "mouse");
+		}
 	}
-	didMount() {
-		this._keyDiv.addEventListener("touchstart",
-			(event) => this.onTouchStart(event)
-		);
-		this._keyDiv.addEventListener("touchmove",
-			(event) => this.onTouchMove(event)
-		);
-	}
-	press() {
-		this.model.classList.add("pressed");
-	}
-	release() {
-		this.model.classList.remove("pressed");
-	}
-	get key() {
-		return this.props.key;
-	}
-	start(id) {
-		const tone = toneFromKey(this.key);
-		tone.key = this;
-		this.props.oscillator.startNote(tone.note, tone.octave);
-		this.press();
-		currentKeys[id] = tone;
-	}
-	stop(id) {
-		const tone = toneFromKey(this.key);
-		this.props.oscillator.stopNote(tone.note, tone.octave);
-		this.release();
-		delete currentKeys[id];
-	}
-	onMouseDown() {
-		this.start("mouse");
-	}
-	onMouseEnter() {
-		const oldTone = currentKeys.mouse;
-		if (oldTone) {
-			oldTone.key.stop("mouse");
-
-			this.start("mouse");
+	onMouseEnter(event) {
+		if (event.buttons > 0 && event.button === 0) {
+			this.props.stop("mouse");
+			this.props.start(this.props.keyName, "mouse");
 		}
 	}
 	onTouchStart(event) {
-		event.preventDefault();
-
 		for (const touch of event.changedTouches) {
-			this.start(touch.identifier);
+			this.props.start(this.props.keyName, touch.identifier);
 		}
 	}
-	onTouchMove(event) {
-		event.preventDefault();
-
-		for (const touch of event.changedTouches) {
-			const oldTone = currentKeys[touch.identifier];
-			if (oldTone) {
-				const elem = document.elementFromPoint(touch.clientX, touch.clientY);
-				const controller = findController(elem);
-
-				if (controller instanceof Key && controller !== oldTone.key) {
-					oldTone.key.stop(touch.identifier);
-
-					controller.start(touch.identifier);
-				}
-			}
-		}
+	render() {
+		const pressed = this.props.keyState ? " pressed" : "";
+		return j({div: {
+			className: this.props.className + pressed,
+			onMouseDown: this.onMouseDown.bind(this),
+			onMouseEnter: this.onMouseEnter.bind(this),
+			onTouchStart: this.onTouchStart.bind(this),
+			"data-key": this.props.keyName,
+		}}, [
+			j("div", this.props.keyName),
+		]);
 	}
 }
 
 Key.propTypes = {
-	class: String,
-	key: String,
-	oscillator: Object,
-	setRef: Function,
+	className: PropTypes.string,
+	keyName: PropTypes.string,
+	keyState: PropTypes.bool,
+	start: PropTypes.func,
+	stop: PropTypes.func,
 };
 
-class KeyRow extends Controller {
-	init() {
-		const row = this.props.row;
-		const oscillator = this.props.oscillator;
-		const setRef = this.props.setRef;
-
-		return j({div: {class: "key-row"}}, [
-			j([Key, {class: "white-key", key: row[0], oscillator, setRef}]),
-			j([Key, {class: "black-key", key: row[1], oscillator, setRef}]),
-			j([Key, {class: "white-key", key: row[2], oscillator, setRef}]),
-			j([Key, {class: "black-key", key: row[3], oscillator, setRef}]),
-			j([Key, {class: "white-key", key: row[4], oscillator, setRef}]),
-			j([Key, {class: "white-key", key: row[5], oscillator, setRef}]),
-			j([Key, {class: "black-key", key: row[6], oscillator, setRef}]),
-			j([Key, {class: "white-key", key: row[7], oscillator, setRef}]),
-			j([Key, {class: "black-key", key: row[8], oscillator, setRef}]),
-			j([Key, {class: "white-key", key: row[9], oscillator, setRef}]),
-			j([Key, {class: "black-key", key: row[10], oscillator, setRef}]),
-			j([Key, {class: "white-key", key: row[11], oscillator, setRef}]),
-			j([Key, {class: "white-key", key: row[12], oscillator, setRef}]),
-			j([Key, {class: "black-key", key: row[13], oscillator, setRef}]),
-			j([Key, {class: "white-key", key: row[14], oscillator, setRef}]),
-			j([Key, {class: "black-key", key: row[15], oscillator, setRef}]),
-			j([Key, {class: "white-key", key: row[16], oscillator, setRef}]),
-		]);
+class KeyRow extends Component {
+	render() {
+		const row = [...this.props.row];
+		return j({div: {className: "key-row"}}, row.map((key, i) =>
+			j([Key, {
+				className: keyColors[i] === 0 ? "white-key" : "black-key",
+				keyName: key,
+				keyState: this.props.keyState[key],
+				start: this.props.start,
+				stop: this.props.stop,
+				key,
+			}])
+		));
 	}
 }
 
 KeyRow.propTypes = {
-	row: String,
-	oscillator: Object,
-	setRef: Function,
+	row: PropTypes.string,
+	keyState: PropTypes.objectOf(PropTypes.bool),
+	start: PropTypes.func,
+	stop: PropTypes.func,
 };
 
-class Keyboard extends Controller {
-	init() {
-		this._keyDown = (event) => this.keyDown(event);
-		this._keyUp = (event) => this.keyUp(event);
-
-		const oscillator = this.props.oscillator;
-		this.keys = {};
-		const setRef = (ref, key) => this.keys[key] = ref;
-
-		return j({div: 0}, [
-			j([KeyRow, {row: topRow, oscillator, setRef}]),
-			j([KeyRow, {row: bottomRow, oscillator, setRef}]),
-		]);
+class Keyboard extends Component {
+	constructor(...args) {
+		super(...args);
+		this.state = {
+			keyState: {
+			},
+			sources: {},
+		};
+		this._mouseUp = this.mouseUp.bind(this);
+		this._touchMove = this.touchMove.bind(this);
+		this._touchEnd = this.touchEnd.bind(this);
+		this._keyDown = this.keyDown.bind(this);
+		this._keyUp = this.keyUp.bind(this);
 	}
-	didMount() {
-		window.addEventListener("mouseup", Keyboard.mouseUp);
-		window.addEventListener("touchend", Keyboard.touchEnd);
+	componentDidMount() {
+		window.addEventListener("mouseup", this._mouseUp);
+		window.addEventListener("touchmove", this._touchMove);
+		window.addEventListener("touchend", this._touchEnd);
 		window.addEventListener("keydown", this._keyDown);
 		window.addEventListener("keyup", this._keyUp);
 	}
-	didUnMount() {
-		window.removeEventListener("mouseup", Keyboard.mouseUp);
-		window.removeEventListener("touchend", Keyboard.touchEnd);
+	componentWillUnmount() {
+		window.removeEventListener("mouseup", this._mouseUp);
+		window.removeEventListener("touchend", this._touchEnd);
 		window.removeEventListener("keydown", this._keyDown);
 		window.removeEventListener("keyup", this._keyUp);
 	}
-	static mouseUp() {
-		const tone = currentKeys.mouse;
-		if (tone) {
-			tone.key.stop("mouse");
+	mouseUp() {
+		this.stop("mouse");
+	}
+	touchMove(event) {
+		for (const touch of event.changedTouches) {
+			const oldKey = this.state.sources[touch.identifier];
+			if (oldKey) {
+				let elem = document.elementFromPoint(touch.clientX, touch.clientY);
+				if (elem && !elem.dataset.key) {
+					elem = elem.parentElement;
+				}
+
+				if (elem && elem.dataset.key && elem.dataset.key !== oldKey) {
+					this.stop(touch.identifier);
+
+					this.start(elem.dataset.key, touch.identifier);
+				}
+			}
 		}
 	}
-	static touchEnd(event) {
-		event.preventDefault();
-
+	touchEnd(event) {
 		for (const touch of event.changedTouches) {
-			const tone = currentKeys[touch.identifier];
-			if (tone) {
-				tone.key.stop(touch.identifier);
-			}
+			this.stop(touch.identifier);
 		}
 	}
 	keyDown(event) {
 		if (event.ctrlKey) return;
 
 		const key = toUnModified(event.key);
-		const keyController = this.keys[key];
-		if (keyController) {
+		if (bothRows.includes(key)) {
 			event.preventDefault();
-			keyController.start(key);
+			this.start(key, key);
 		}
 	}
 	keyUp(event) {
 		const key = toUnModified(event.key);
-		const tone = currentKeys[key];
-		if (tone) {
-			tone.key.stop(key);
+		this.stop(key);
+	}
+	start(key, id) {
+		const tone = toneFromKey(key);
+		this.props.oscillator.startNote(tone.note, tone.octave);
+
+		this.setState((state) => ({
+			keyState: merge(state.keyState, {
+				[key]: true,
+			}),
+			sources: merge(state.sources, {
+				[id]: key,
+			}),
+		}));
+	}
+	stop(id) {
+		const key = this.state.sources[id];
+		if (key == null) {
+			return;
 		}
+
+		const tone = toneFromKey(key);
+		this.props.oscillator.stopNote(tone.note, tone.octave);
+
+		this.setState((state) => {
+			const newSources = merge(state.sources);
+			delete newSources[id];
+			return {
+				keyState: merge(state.keyState, {
+					[key]: false,
+				}),
+				sources: newSources,
+			};
+		});
+	}
+	render() {
+		return j("div", [
+			j([KeyRow, {
+				row: topRow,
+				keyState: this.state.keyState,
+				start: this.start.bind(this),
+				stop: this.stop.bind(this),
+			}]),
+			j([KeyRow, {
+				row: bottomRow,
+				keyState: this.state.keyState,
+				start: this.start.bind(this),
+				stop: this.stop.bind(this),
+			}]),
+		]);
 	}
 }
 
 Keyboard.propTypes = {
-	oscillator: Object,
+	oscillator: PropTypes.instanceOf(Osc3x),
 };
 
 module.exports = Keyboard;
