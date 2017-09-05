@@ -27,6 +27,10 @@ module.exports = class Osc3x {
 	set osc1({type, octave}) {
 		if (type != null) this._osc1.type = type;
 		if (octave != null) this._osc1.octave = octave;
+
+		for (const note of Object.values(this._playingNotes)) {
+			note.update();
+		}
 	}
 	get osc2() {
 		return Object.freeze(Object.assign({}, this._osc2));
@@ -35,6 +39,10 @@ module.exports = class Osc3x {
 		if (type != null) this._osc2.type = type;
 		if (mixRatio != null) this._osc2.mixRatio = mixRatio;
 		if (octave != null) this._osc2.octave = octave;
+
+		for (const note of Object.values(this._playingNotes)) {
+			note.update();
+		}
 	}
 	get osc3() {
 		return Object.freeze(Object.assign({}, this._osc3));
@@ -43,12 +51,20 @@ module.exports = class Osc3x {
 		if (type != null) this._osc3.type = type;
 		if (mixRatio != null) this._osc3.mixRatio = mixRatio;
 		if (octave != null) this._osc3.octave = octave;
+
+		for (const note of Object.values(this._playingNotes)) {
+			note.update();
+		}
 	}
 	get gain() {
 		return this._gain;
 	}
 	set gain(val) {
 		this._gain = val;
+
+		for (const note of Object.values(this._playingNotes)) {
+			note.update();
+		}
 	}
 	getGains() {
 		const gain3 = this._osc3.mixRatio;
@@ -107,6 +123,22 @@ module.exports = class Osc3x {
 				osc2.stop();
 				osc3.stop();
 			},
+			update: () => {
+				primaryGain.gain.value = this._gain;
+
+				const {gain1, gain2, gain3} = this.getGains();
+				osc1Gain.gain.value = gain1;
+				osc2Gain.gain.value = gain2;
+				osc3Gain.gain.value = gain3;
+
+				osc1.type = this._osc1.type;
+				osc2.type = this._osc2.type;
+				osc3.type = this._osc3.type;
+
+				osc1.frequency.value = getPitch(note, octave + this._osc1.octave);
+				osc2.frequency.value = getPitch(note, octave + this._osc2.octave);
+				osc3.frequency.value = getPitch(note, octave + this._osc3.octave);
+			},
 		};
 
 		//start and track note
@@ -117,7 +149,7 @@ module.exports = class Osc3x {
 		const name = `${note} - ${octave}`;
 		if (this._playingNotes[name] != null) {
 			this._playingNotes[name].stop();
-			this._playingNotes[name] = null;
+			delete this._playingNotes[name];
 		}
 	}
 };
