@@ -171,7 +171,7 @@ class Keyboard extends Component {
 		});
 	}
 	render() {
-		return j("div", [
+		return j({div: {className: "keyboard"}}, [
 			j([KeyRow, {
 				row: topRow,
 				keyState: this.state.keyState,

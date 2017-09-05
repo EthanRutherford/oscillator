@@ -10,6 +10,10 @@ body {
 	margin: 10px 0 0 10px;
 }
 
+.keyboard {
+	touch-action: none;
+}
+
 .key-row {
 	position: relative;
 	margin: 10px;
