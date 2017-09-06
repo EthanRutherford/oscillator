@@ -16,9 +16,14 @@ function unNormalizeValue(value, min, max) {
 
 class Knob extends PureComponent {
 	componentWillMount() {
+		this._mouseDown = this.mouseDown.bind(this);
 		this._mouseMove = this.mouseMove.bind(this);
 		this._mouseUp = this.mouseUp.bind(this);
+		this._touchStart = this.touchStart.bind(this);
+		this._touchMove = this.touchMove.bind(this);
+		this._touchEnd = this.touchEnd.bind(this);
 
+		this._currentTouch = null;
 		this._internalValue = normalizeValue(
 			this.props.value,
 			this.props.min,
@@ -36,15 +41,8 @@ class Knob extends PureComponent {
 		window.removeEventListener("mousemove", this._mouseMove);
 		window.removeEventListener("mouseup", this._mouseUp);
 	}
-	mouseDown(event) {
-		if (event.button === 0) {
-			event.preventDefault();
-			window.addEventListener("mousemove", this._mouseMove);
-			window.addEventListener("mouseup", this._mouseUp);
-		}
-	}
-	mouseMove(event) {
-		const pct = -event.movementY / this.knob.offsetHeight;
+	handleMove(amt) {
+		const pct = amt / this.knob.offsetHeight;
 		this._internalValue = clamp(this._internalValue + pct, 0, 1);
 
 		let newValue = unNormalizeValue(
@@ -62,6 +60,16 @@ class Knob extends PureComponent {
 			this.props.onChange(newValue);
 		}
 	}
+	mouseDown(event) {
+		if (event.button === 0) {
+			event.preventDefault();
+			window.addEventListener("mousemove", this._mouseMove);
+			window.addEventListener("mouseup", this._mouseUp);
+		}
+	}
+	mouseMove(event) {
+		this.handleMove(-event.movementY);
+	}
 	mouseUp(event) {
 		if (event.button === 0) {
 			window.removeEventListener("mousemove", this._mouseMove);
@@ -74,6 +82,47 @@ class Knob extends PureComponent {
 			);
 		}
 	}
+	touchStart(event) {
+		if (this._currentTouch == null) {
+			const touch = event.changedTouches[0];
+			this._currentTouch = touch;
+
+			window.addEventListener("touchmove", this._touchMove);
+			window.addEventListener("touchend", this._touchEnd);
+		}
+	}
+	touchMove(event) {
+		let curTouch;
+		for (const touch of event.changedTouches) {
+			if (touch.identifier === this._currentTouch.identifier) {
+				curTouch = touch;
+			}
+		}
+
+		if (!curTouch) {
+			return;
+		}
+
+		this.handleMove(this._currentTouch.pageY - curTouch.pageY);
+		this._currentTouch = curTouch;
+	}
+	touchEnd(event) {
+		let curTouch;
+		for (const touch of event.changedTouches) {
+			if (touch.identifier === this._currentTouch.identifier) {
+				curTouch = touch;
+			}
+		}
+
+		if (!curTouch) {
+			return;
+		}
+
+		this._currentTouch = null;
+
+		window.removeEventListener("touchmove", this._touchMove);
+		window.removeEventListener("touchend", this._touchEnd);
+	}
 	render() {
 		const angle = this._internalValue * 270;
 
@@ -84,7 +133,8 @@ class Knob extends PureComponent {
 				className: "knob-input",
 				style: {transform: `rotate(${angle}deg)`},
 				title: this.props.value,
-				onMouseDown: this.mouseDown.bind(this),
+				onMouseDown: this._mouseDown,
+				onTouchStart: this._touchStart,
 				ref: (ref) => this.knob = ref,
 			}}, [
 				j({div: {
