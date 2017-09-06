@@ -10,9 +10,7 @@ const OscEditor = require("./osc-editor");
 const audioContext = new AudioContext();
 
 class App extends Component {
-	constructor(...args) {
-		super(...args);
-
+	componentWillMount() {
 		this.analyser = audioContext.createAnalyser();
 		this.analyser.fftSize = 1024;
 		this.analyser.connect(audioContext.destination);
@@ -47,20 +45,20 @@ class App extends Component {
 	}
 	render() {
 		return j({div: {className: "content"}}, [
-			j({div: {className: "top-content"}}, [
+			j({div: {className: "left-content"}}, [
 				j({canvas: {
 					className: "oscilloscope",
 					width: 800,
 					height: 100,
 					ref: (ref) => this.canvas = ref,
 				}}),
+				j([Keyboard, {oscillator: this.state.oscillator}]),
+			]),
+			j({div: {className: "right-content"}}, [
 				j([OscEditor, {
 					oscillator: this.state.oscillator,
 					updateOsc3x: this.updateOsc3x.bind(this),
 				}]),
-			]),
-			j({div: {className: "bottom-content"}}, [
-				j([Keyboard, {oscillator: this.state.oscillator}]),
 			]),
 		]);
 	}

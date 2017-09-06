@@ -1,27 +1,36 @@
 const {Component} = require("react");
 const PropTypes = require("prop-types");
 const j = require("react-jenny");
+const Knob = require("./knob");
 const Osc3x = require("./3xosc");
 const {draw3xOsc} = require("./visualize");
-
-const clamp = (val, min, max) => Math.min(Math.max(min, val), max);
-
-const stopProp = (event) => event.stopPropagation();
 
 class OscBar extends Component {
 	setType(event) {
 		this.props.update({type: event.target.value});
 	}
-	setMix(event) {
-		const mixRatio = clamp(event.target.value, 0, 1);
-		this.props.update({mixRatio});
+	setMix(value) {
+		this.props.update({mixRatio: value});
 	}
-	setOctave(event) {
-		const octave = Math.floor(clamp(event.target.value, -2, 2));
-		this.props.update({octave});
+	setOctave(value) {
+		this.props.update({octave: value});
+	}
+	renderMix() {
+		if (this.props.settings.mixRatio == null) {
+			return j({div: {className: "osc-knob-placeholder"}});
+		}
+
+		return j([Knob, {
+			className: "osc-knob",
+			min: 0,
+			max: 1,
+			step: .01,
+			value: this.props.settings.mixRatio,
+			onChange: this.setMix.bind(this),
+		}]);
 	}
 	render() {
-		return j({div: {className: "osc"}}, [
+		return j({div: {className: "osc-row"}}, [
 			j({select: {
 				value: this.props.settings.type,
 				onChange: this.setType.bind(this),
@@ -31,33 +40,15 @@ class OscBar extends Component {
 				j({option: {value: "sawtooth"}}, "sawtooth"),
 				j({option: {value: "triangle"}}, "triangle"),
 			]),
-			j({input: {
-				type: "number",
+			j([Knob, {
+				className: "osc-knob",
 				min: -2,
 				max: 2,
 				step: 1,
 				value: this.props.settings.octave,
 				onChange: this.setOctave.bind(this),
-				onKeyDown: stopProp,
-			}}),
-			this.props.settings.mixRatio != null ?
-			j({input: {
-				type: "number",
-				min: 0,
-				max: 1,
-				step: .01,
-				value: this.props.settings.mixRatio,
-				onChange: this.setMix.bind(this),
-				onKeyDown: stopProp,
-			}}) :
-			j({input: {
-				type: "number",
-				min: 0,
-				max: 1,
-				step: .01,
-				style: {visibility: "hidden"},
-				onKeyDown: stopProp,
-			}}),
+			}]),
+			this.renderMix(),
 		]);
 	}
 }
@@ -72,29 +63,33 @@ OscBar.propTypes = {
 };
 
 class OscEditor extends Component {
-	setGain(event) {
-		const gain = clamp(event.target.value, 0, 1);
-		this.props.updateOsc3x({gain});
+	setGain(value) {
+		this.props.updateOsc3x({gain: value});
 	}
 	updateOsc(which, data) {
 		this.props.updateOsc3x({[which]: data});
 	}
 	render() {
 		const wave = draw3xOsc(this.props.oscillator);
+
 		return j({div: {className: "editor"}}, [
 			j({div: {className: "top-bar"}}, [
 				j({img: {className: "waveform", src: wave}}),
-				j({input: {
-					type: "number",
+				j([Knob, {
+					className: "gain-knob",
 					min: 0,
 					max: 1,
 					step: .01,
 					value: this.props.oscillator.gain,
 					onChange: this.setGain.bind(this),
-					onKeyDown: stopProp,
-				}}),
+				}]),
 			]),
 			j({div: {className: "editor-content"}}, [
+				j({div: {className: "osc-row"}}, [
+					j({span: {className: "column-title"}}, "waveform"),
+					j({span: {className: "column-title"}}, "octave"),
+					j({span: {className: "column-title"}}, "mix ratio"),
+				]),
 				j([OscBar, {
 					settings: this.props.oscillator.osc1,
 					update: (data) => this.updateOsc("osc1", data),

@@ -19,7 +19,9 @@ module.exports = class Osc3x {
 			mixRatio: .4,
 			octave: -2,
 		};
-		this._gain = .6;
+		this._gain = audioContext.createGain();
+		this._gain.gain.value = .6;
+		this._gain.connect(destination);
 	}
 	get osc1() {
 		return Object.freeze(Object.assign({}, this._osc1));
@@ -57,10 +59,10 @@ module.exports = class Osc3x {
 		}
 	}
 	get gain() {
-		return this._gain;
+		return this._gain.gain.value;
 	}
 	set gain(val) {
-		this._gain = val;
+		this._gain.gain.value = val;
 
 		for (const note of Object.values(this._playingNotes)) {
 			note.update();
@@ -104,13 +106,10 @@ module.exports = class Osc3x {
 		osc3Gain.gain.value = gain3;
 		osc3.connect(osc3Gain);
 
-		//combine oscillators
-		const primaryGain = this._context.createGain();
-		primaryGain.gain.value = this._gain;
-		osc1Gain.connect(primaryGain);
-		osc2Gain.connect(primaryGain);
-		osc3Gain.connect(primaryGain);
-		primaryGain.connect(this._destination);
+		//attatch to gain
+		osc1Gain.connect(this._gain);
+		osc2Gain.connect(this._gain);
+		osc3Gain.connect(this._gain);
 
 		const merged = {
 			start() {
@@ -124,8 +123,6 @@ module.exports = class Osc3x {
 				osc3.stop();
 			},
 			update: () => {
-				primaryGain.gain.value = this._gain;
-
 				const {gain1, gain2, gain3} = this.getGains();
 				osc1Gain.gain.value = gain1;
 				osc2Gain.gain.value = gain2;

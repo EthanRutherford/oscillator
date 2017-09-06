@@ -73,8 +73,13 @@ KeyRow.propTypes = {
 };
 
 class Keyboard extends PureComponent {
-	constructor(...args) {
-		super(...args);
+	componentWillMount() {
+		this._mouseUp = this.mouseUp.bind(this);
+		this._touchMove = this.touchMove.bind(this);
+		this._touchEnd = this.touchEnd.bind(this);
+		this._keyDown = this.keyDown.bind(this);
+		this._keyUp = this.keyUp.bind(this);
+
 		this.state = {
 			keyState: [...bothRows].reduce((obj, x) => {
 				obj[x] = false;
@@ -82,11 +87,6 @@ class Keyboard extends PureComponent {
 			}, {}),
 			sources: {},
 		};
-		this._mouseUp = this.mouseUp.bind(this);
-		this._touchMove = this.touchMove.bind(this);
-		this._touchEnd = this.touchEnd.bind(this);
-		this._keyDown = this.keyDown.bind(this);
-		this._keyUp = this.keyUp.bind(this);
 	}
 	componentDidMount() {
 		window.addEventListener("mouseup", this._mouseUp);
