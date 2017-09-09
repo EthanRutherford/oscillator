@@ -11,6 +11,8 @@ const audioContext = new AudioContext();
 
 class App extends Component {
 	componentWillMount() {
+		this.updateOsc3x = this.updateOsc3x.bind(this);
+
 		this.analyser = audioContext.createAnalyser();
 		this.analyser.fftSize = 1024;
 		this.analyser.connect(audioContext.destination);
@@ -57,7 +59,7 @@ class App extends Component {
 			j({div: {className: "right-content"}}, [
 				j([OscEditor, {
 					oscillator: this.state.oscillator,
-					updateOsc3x: this.updateOsc3x.bind(this),
+					updateOsc3x: this.updateOsc3x,
 				}]),
 			]),
 		]);

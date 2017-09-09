@@ -1,11 +1,16 @@
-const {Component} = require("react");
+const {Component, PureComponent} = require("react");
 const PropTypes = require("prop-types");
 const j = require("react-jenny");
 const Knob = require("./knob");
 const Osc3x = require("./3xosc");
 const {draw3xOsc} = require("./visualize");
 
-class OscBar extends Component {
+class OscBar extends PureComponent {
+	componentWillMount() {
+		this.setType = this.setType.bind(this);
+		this.setMix = this.setMix.bind(this);
+		this.setOctave = this.setOctave.bind(this);
+	}
 	setType(event) {
 		this.props.update({type: event.target.value});
 	}
@@ -26,14 +31,14 @@ class OscBar extends Component {
 			max: 1,
 			step: .01,
 			value: this.props.settings.mixRatio,
-			onChange: this.setMix.bind(this),
+			onChange: this.setMix,
 		}]);
 	}
 	render() {
 		return j({div: {className: "osc-row"}}, [
 			j({select: {
 				value: this.props.settings.type,
-				onChange: this.setType.bind(this),
+				onChange: this.setType,
 			}}, [
 				j({option: {value: "sine"}}, "sine"),
 				j({option: {value: "square"}}, "square"),
@@ -46,7 +51,7 @@ class OscBar extends Component {
 				max: 2,
 				step: 1,
 				value: this.props.settings.octave,
-				onChange: this.setOctave.bind(this),
+				onChange: this.setOctave,
 			}]),
 			this.renderMix(),
 		]);
@@ -63,6 +68,12 @@ OscBar.propTypes = {
 };
 
 class OscEditor extends Component {
+	componentWillMount() {
+		this.setGain = this.setGain.bind(this);
+		this.updateOsc1 = this.updateOsc.bind(this, "osc1");
+		this.updateOsc2 = this.updateOsc.bind(this, "osc2");
+		this.updateOsc3 = this.updateOsc.bind(this, "osc3");
+	}
 	setGain(value) {
 		this.props.updateOsc3x({gain: value});
 	}
@@ -81,7 +92,7 @@ class OscEditor extends Component {
 					max: 1,
 					step: .01,
 					value: this.props.oscillator.gain,
-					onChange: this.setGain.bind(this),
+					onChange: this.setGain,
 				}]),
 			]),
 			j({div: {className: "editor-content"}}, [
@@ -92,15 +103,15 @@ class OscEditor extends Component {
 				]),
 				j([OscBar, {
 					settings: this.props.oscillator.osc1,
-					update: (data) => this.updateOsc("osc1", data),
+					update: this.updateOsc1,
 				}]),
 				j([OscBar, {
 					settings: this.props.oscillator.osc2,
-					update: (data) => this.updateOsc("osc2", data),
+					update: this.updateOsc2,
 				}]),
 				j([OscBar, {
 					settings: this.props.oscillator.osc3,
-					update: (data) => this.updateOsc("osc3", data),
+					update: this.updateOsc3,
 				}]),
 			]),
 		]);

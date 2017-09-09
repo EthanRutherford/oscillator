@@ -1,4 +1,4 @@
-const {Component, PureComponent} = require("react");
+const {PureComponent} = require("react");
 const PropTypes = require("prop-types");
 const j = require("react-jenny");
 const {merge} = require("./util");
@@ -10,7 +10,12 @@ const topRow = "q2w3er5t6y7ui9o0p";
 const bottomRow = "zsxdcvgbhnjm,l.;/";
 const bothRows = topRow + bottomRow;
 
-class Key extends Component {
+class Key extends PureComponent {
+	componentWillMount() {
+		this.onMouseDown = this.onMouseDown.bind(this);
+		this.onMouseEnter = this.onMouseEnter.bind(this);
+		this.onTouchStart = this.onTouchStart.bind(this);
+	}
 	onMouseDown(event) {
 		if (event.button === 0) {
 			this.props.start(this.props.keyName, "mouse");
@@ -31,9 +36,9 @@ class Key extends Component {
 		const pressed = this.props.keyState ? " pressed" : "";
 		return j({div: {
 			className: this.props.className + pressed,
-			onMouseDown: this.onMouseDown.bind(this),
-			onMouseEnter: this.onMouseEnter.bind(this),
-			onTouchStart: this.onTouchStart.bind(this),
+			onMouseDown: this.onMouseDown,
+			onMouseEnter: this.onMouseEnter,
+			onTouchStart: this.onTouchStart,
 			"data-key": this.props.keyName,
 		}}, [
 			j("div", this.props.keyName),
@@ -49,7 +54,16 @@ Key.propTypes = {
 	stop: PropTypes.func.isRequired,
 };
 
-class KeyRow extends Component {
+class KeyRow extends PureComponent {
+	shouldComponentUpdate(nextProps) {
+		for (const char of nextProps.row) {
+			if (nextProps.keyState[char] !== this.props.keyState[char]) {
+				return true;
+			}
+		}
+
+		return false;
+	}
 	render() {
 		const row = [...this.props.row];
 		return j({div: {className: "key-row"}}, row.map((key, i) =>
@@ -74,39 +88,41 @@ KeyRow.propTypes = {
 
 class Keyboard extends PureComponent {
 	componentWillMount() {
-		this._mouseUp = this.mouseUp.bind(this);
-		this._touchMove = this.touchMove.bind(this);
-		this._touchEnd = this.touchEnd.bind(this);
-		this._keyDown = this.keyDown.bind(this);
-		this._keyUp = this.keyUp.bind(this);
+		this.start = this.start.bind(this);
+		this.stop = this.stop.bind(this);
+		this.mouseUp = this.mouseUp.bind(this);
+		this.touchMove = this.touchMove.bind(this);
+		this.touchEnd = this.touchEnd.bind(this);
+		this.keyDown = this.keyDown.bind(this);
+		this.keyUp = this.keyUp.bind(this);
+		this.sources = {};
 
 		this.state = {
 			keyState: [...bothRows].reduce((obj, x) => {
 				obj[x] = false;
 				return obj;
 			}, {}),
-			sources: {},
 		};
 	}
 	componentDidMount() {
-		window.addEventListener("mouseup", this._mouseUp);
-		window.addEventListener("touchmove", this._touchMove);
-		window.addEventListener("touchend", this._touchEnd);
-		window.addEventListener("keydown", this._keyDown);
-		window.addEventListener("keyup", this._keyUp);
+		window.addEventListener("mouseup", this.mouseUp);
+		window.addEventListener("touchmove", this.touchMove);
+		window.addEventListener("touchend", this.touchEnd);
+		window.addEventListener("keydown", this.keyDown);
+		window.addEventListener("keyup", this.keyUp);
 	}
 	componentWillUnmount() {
-		window.removeEventListener("mouseup", this._mouseUp);
-		window.removeEventListener("touchend", this._touchEnd);
-		window.removeEventListener("keydown", this._keyDown);
-		window.removeEventListener("keyup", this._keyUp);
+		window.removeEventListener("mouseup", this.mouseUp);
+		window.removeEventListener("touchend", this.touchEnd);
+		window.removeEventListener("keydown", this.keyDown);
+		window.removeEventListener("keyup", this.keyUp);
 	}
 	mouseUp() {
 		this.stop("mouse");
 	}
 	touchMove(event) {
 		for (const touch of event.changedTouches) {
-			const oldKey = this.state.sources[touch.identifier];
+			const oldKey = this.sources[touch.identifier];
 			if (oldKey) {
 				let elem = document.elementFromPoint(touch.clientX, touch.clientY);
 				if (elem && !elem.dataset.key) {
@@ -142,49 +158,43 @@ class Keyboard extends PureComponent {
 	start(key, id) {
 		const tone = toneFromKey(key);
 		this.props.oscillator.startNote(tone.note, tone.octave);
+		this.sources[id] = key;
 
 		this.setState((state) => ({
 			keyState: merge(state.keyState, {
 				[key]: true,
 			}),
-			sources: merge(state.sources, {
-				[id]: key,
-			}),
 		}));
 	}
 	stop(id) {
-		const key = this.state.sources[id];
+		const key = this.sources[id];
 		if (key == null) {
 			return;
 		}
 
 		const tone = toneFromKey(key);
 		this.props.oscillator.stopNote(tone.note, tone.octave);
+		delete this.sources[id];
 
-		this.setState((state) => {
-			const newSources = merge(state.sources);
-			delete newSources[id];
-			return {
-				keyState: merge(state.keyState, {
-					[key]: false,
-				}),
-				sources: newSources,
-			};
-		});
+		this.setState((state) => ({
+			keyState: merge(state.keyState, {
+				[key]: false,
+			}),
+		}));
 	}
 	render() {
 		return j({div: {className: "keyboard"}}, [
 			j([KeyRow, {
 				row: topRow,
 				keyState: this.state.keyState,
-				start: this.start.bind(this),
-				stop: this.stop.bind(this),
+				start: this.start,
+				stop: this.stop,
 			}]),
 			j([KeyRow, {
 				row: bottomRow,
 				keyState: this.state.keyState,
-				start: this.start.bind(this),
-				stop: this.stop.bind(this),
+				start: this.start,
+				stop: this.stop,
 			}]),
 		]);
 	}

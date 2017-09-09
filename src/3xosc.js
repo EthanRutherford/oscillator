@@ -1,67 +1,67 @@
 const {getPitch} = require("./sound-util");
 
+const removeUndef = (obj) => Object.keys(obj).forEach((key) => obj[key] === undefined && delete obj[key]) || obj;
+const immuteClone = (a, b) => Object.freeze(Object.assign({}, a, removeUndef(b)));
+
 module.exports = class Osc3x {
 	constructor(audioContext, destination = audioContext.destination) {
 		this._context = audioContext;
 		this._destination = destination;
 		this._playingNotes = {};
-		this._osc1 = {
+		this._osc1 = Object.freeze({
 			type: "sine",
 			octave: 0,
-		};
-		this._osc2 = {
+		});
+		this._osc2 = Object.freeze({
 			type: "sine",
 			mixRatio: .5,
 			octave: -1,
-		};
-		this._osc3 = {
+		});
+		this._osc3 = Object.freeze({
 			type: "sine",
 			mixRatio: .4,
 			octave: -2,
-		};
+		});
+		this._gainValue = .6;
 		this._gain = audioContext.createGain();
-		this._gain.gain.value = .6;
+		this._gain.gain.value = this._gainValue;
 		this._gain.connect(destination);
 	}
 	get osc1() {
-		return Object.freeze(Object.assign({}, this._osc1));
+		return this._osc1;
 	}
 	set osc1({type, octave}) {
-		if (type != null) this._osc1.type = type;
-		if (octave != null) this._osc1.octave = octave;
+		this._osc1 = immuteClone(this._osc1, {type, octave});
 
 		for (const note of Object.values(this._playingNotes)) {
 			note.update();
 		}
 	}
 	get osc2() {
-		return Object.freeze(Object.assign({}, this._osc2));
+		return this._osc2;
 	}
 	set osc2({type, mixRatio, octave}) {
-		if (type != null) this._osc2.type = type;
-		if (mixRatio != null) this._osc2.mixRatio = mixRatio;
-		if (octave != null) this._osc2.octave = octave;
+		this._osc2 = immuteClone(this._osc2, {type, mixRatio, octave});
 
 		for (const note of Object.values(this._playingNotes)) {
 			note.update();
 		}
 	}
 	get osc3() {
-		return Object.freeze(Object.assign({}, this._osc3));
+		return this._osc3;
 	}
 	set osc3({type, mixRatio, octave}) {
-		if (type != null) this._osc3.type = type;
-		if (mixRatio != null) this._osc3.mixRatio = mixRatio;
-		if (octave != null) this._osc3.octave = octave;
+		this._osc3 = immuteClone(this._osc3, {type, mixRatio, octave});
 
 		for (const note of Object.values(this._playingNotes)) {
 			note.update();
 		}
 	}
 	get gain() {
-		return this._gain.gain.value;
+		return this._gainValue;
 	}
 	set gain(val) {
+		this._gainValue = val;
 		this._gain.gain.value = val;
 
 		for (const note of Object.values(this._playingNotes)) {
