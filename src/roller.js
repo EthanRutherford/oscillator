@@ -1,20 +1,30 @@
 const {PureComponent} = require("react");
 const PropTypes = require("prop-types");
 const j = require("react-jenny");
-require("../styles/knob.css");
+require("../styles/roller.css");
 const {clamp} = require("./util");
 
-function normalizeValue(value, min, max) {
-	const diff = max - min;
-	return (value - min) / diff;
-}
+const RollerProp = PropTypes.oneOfType([
+	PropTypes.string,
+	PropTypes.shape({
+		display: PropTypes.string.isRequired,
+		value: PropTypes.string.isRequired,
+	}),
+]);
+const getValue = (item) => item instanceof Object ? item.value : item;
+const getDisplay = (item) => item instanceof Object ? item.display : item;
 
-function unNormalizeValue(value, min, max) {
-	const diff = max - min;
-	return (value * diff) + min;
-}
+const RollerItem = (props) => j({div: {
+	className: "roller-item",
+	style: {top: `${props.index * 100}%`},
+}}, getDisplay(props.item));
 
-class Knob extends PureComponent {
+RollerItem.propTypes = {
+	item: RollerProp.isRequired,
+	index: PropTypes.number.isRequired,
+};
+
+class Roller extends PureComponent {
 	componentWillMount() {
 		this.mouseDown = this.mouseDown.bind(this);
 		this.mouseMove = this.mouseMove.bind(this);
@@ -22,13 +32,11 @@ class Knob extends PureComponent {
 		this.touchStart = this.touchStart.bind(this);
 		this.touchMove = this.touchMove.bind(this);
 		this.touchEnd = this.touchEnd.bind(this);
-		this.knobRef = (ref) => this.knob = ref;
+		this.rollerRef = (ref) => this.roller = ref;
 
 		this._currentTouch = null;
-		this._internalValue = normalizeValue(
-			this.props.value,
-			this.props.min,
-			this.props.max,
+		this._internalValue = this.props.items.findIndex(
+			(item) => this.props.value === getValue(item),
 		);
 
 		this.state = {
@@ -42,19 +50,15 @@ class Knob extends PureComponent {
 		window.removeEventListener("touchend", this.touchEnd);
 	}
 	handleMove(amt) {
-		const pct = amt / this.knob.offsetHeight;
-		this._internalValue = clamp(this._internalValue + pct, 0, 1);
-
-		let newValue = unNormalizeValue(
-			this._internalValue,
-			this.props.min,
-			this.props.max,
+		const pct = amt / this.roller.offsetHeight;
+		this._internalValue = clamp(
+			this._internalValue + pct,
+			0,
+			this.props.items.length - 1,
 		);
 
-		if (this.props.step != null) {
-			const step = this.props.step;
-			newValue = Math.round(newValue / step) * step;
-		}
+		const index = Math.round(this._internalValue);
+		const newValue = getValue(this.props.items[index]);
 
 		if (newValue !== this.props.value) {
 			this.props.onChange(newValue);
@@ -77,12 +81,7 @@ class Knob extends PureComponent {
 			window.removeEventListener("mousemove", this.mouseMove);
 			window.removeEventListener("mouseup", this.mouseUp);
 
-			this._internalValue = normalizeValue(
-				this.props.value,
-				this.props.min,
-				this.props.max,
-			);
-
+			this._internalValue = Math.round(this._internalValue);
 			this.setState({displayValue: this._internalValue});
 		}
 	}
@@ -127,44 +126,37 @@ class Knob extends PureComponent {
 		window.removeEventListener("touchmove", this.touchMove);
 		window.removeEventListener("touchend", this.touchEnd);
 
-		this._internalValue = normalizeValue(
-			this.props.value,
-			this.props.min,
-			this.props.max,
-		);
-
+		this._internalValue = Math.round(this._internalValue);
 		this.setState({displayValue: this._internalValue});
 	}
 	render() {
-		const angle = this.state.displayValue * 270;
+		const transform = `translateY(${-this.state.displayValue * 100}%)`;
 
 		return j({div: {
-			className: `knob-background ${this.props.className}`,
+			className: `roller ${this.props.className}`,
+			onMouseDown: this.mouseDown,
+			onTouchStart: this.touchStart,
+			ref: this.rollerRef,
 		}}, [
 			j({div: {
-				className: "knob-input",
-				style: {transform: `rotate(${angle}deg)`},
-				title: this.props.value,
-				onMouseDown: this.mouseDown,
-				onTouchStart: this.touchStart,
-				ref: this.knobRef,
+				className: "roller-container",
+				style: {transform},
 			}}, [
-				j({div: {
-					className: "knob-dot",
-					style: {transform: `rotate(${-angle}deg)`},
-				}}),
+				...this.props.items.map((item, i) => j([RollerItem, {
+					item,
+					index: i,
+					key: getValue(item),
+				}])),
 			]),
 		]);
 	}
 }
 
-Knob.propTypes = {
+Roller.propTypes = {
 	className: PropTypes.string,
-	min: PropTypes.number.isRequired,
-	max: PropTypes.number.isRequired,
-	step: PropTypes.number,
-	value: PropTypes.number.isRequired,
+	items: PropTypes.arrayOf(RollerItem).isRequired,
+	value: PropTypes.string.isRequired,
 	onChange: PropTypes.func.isRequired,
 };
 
-module.exports = Knob;
+module.exports = Roller;

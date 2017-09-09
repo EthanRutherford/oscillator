@@ -2,6 +2,7 @@ const {Component, PureComponent} = require("react");
 const PropTypes = require("prop-types");
 const j = require("react-jenny");
 const Knob = require("./knob");
+const Roller = require("./roller");
 const Osc3x = require("./3xosc");
 const {draw3xOsc} = require("./visualize");
 
@@ -11,8 +12,8 @@ class OscBar extends PureComponent {
 		this.setMix = this.setMix.bind(this);
 		this.setOctave = this.setOctave.bind(this);
 	}
-	setType(event) {
-		this.props.update({type: event.target.value});
+	setType(value) {
+		this.props.update({type: value});
 	}
 	setMix(value) {
 		this.props.update({mixRatio: value});
@@ -36,15 +37,12 @@ class OscBar extends PureComponent {
 	}
 	render() {
 		return j({div: {className: "osc-row"}}, [
-			j({select: {
+			j([Roller, {
+				className: "osc-roller",
+				items: ["sine", "square", "sawtooth", "triangle"],
 				value: this.props.settings.type,
 				onChange: this.setType,
-			}}, [
-				j({option: {value: "sine"}}, "sine"),
-				j({option: {value: "square"}}, "square"),
-				j({option: {value: "sawtooth"}}, "sawtooth"),
-				j({option: {value: "triangle"}}, "triangle"),
-			]),
+			}]),
 			j([Knob, {
 				className: "osc-knob",
 				min: -2,

@@ -9,10 +9,12 @@
     "react-jenny": "^1.0.0"
   },
   "devDependencies": {
-    "pre-req": "^1.4.3"
+    "cross-env": "^5.0.5",
+    "pre-req": "^1.4.5"
   },
   "scripts": {
     "build": "preload build",
+    "build:prod": "cross-env NODE_ENV=production preload build",
     "start": "start http-server ../"
   },
   "author": "Ethan Rutherford",
