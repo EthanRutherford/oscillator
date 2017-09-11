@@ -46,8 +46,8 @@ class App extends Component {
 		this.setState({});
 	}
 	render() {
-		return j({div: {className: "content"}}, [
-			j({div: {className: "left-content"}}, [
+		return j({div: "content"}, [
+			j({div: "left-content"}, [
 				j({canvas: {
 					className: "oscilloscope",
 					width: 800,
@@ -56,7 +56,7 @@ class App extends Component {
 				}}),
 				j([Keyboard, {oscillator: this.state.oscillator}]),
 			]),
-			j({div: {className: "right-content"}}, [
+			j({div: "right-content"}, [
 				j([OscEditor, {
 					oscillator: this.state.oscillator,
 					updateOsc3x: this.updateOsc3x,

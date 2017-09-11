@@ -66,7 +66,7 @@ class KeyRow extends PureComponent {
 	}
 	render() {
 		const row = [...this.props.row];
-		return j({div: {className: "key-row"}}, row.map((key, i) =>
+		return j({div: "key-row"}, row.map((key, i) =>
 			j([Key, {
 				className: keyColors[i] === 0 ? "white-key" : "black-key",
 				keyName: key,
@@ -74,7 +74,7 @@ class KeyRow extends PureComponent {
 				start: this.props.start,
 				stop: this.props.stop,
 				key,
-			}])
+			}]),
 		));
 	}
 }
@@ -183,7 +183,7 @@ class Keyboard extends PureComponent {
 		}));
 	}
 	render() {
-		return j({div: {className: "keyboard"}}, [
+		return j({div: "keyboard"}, [
 			j([KeyRow, {
 				row: topRow,
 				keyState: this.state.keyState,

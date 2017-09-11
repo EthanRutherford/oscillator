@@ -138,9 +138,7 @@ class Knob extends PureComponent {
 	render() {
 		const angle = this.state.displayValue * 270;
 
-		return j({div: {
-			className: `knob-background ${this.props.className}`,
-		}}, [
+		return j({div: `knob-background ${this.props.className}`}, [
 			j({div: {
 				className: "knob-input",
 				style: {transform: `rotate(${angle}deg)`},

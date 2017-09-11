@@ -23,7 +23,7 @@ class OscBar extends PureComponent {
 	}
 	renderMix() {
 		if (this.props.settings.mixRatio == null) {
-			return j({div: {className: "osc-knob-placeholder"}});
+			return j({div: "osc-knob-placeholder"});
 		}
 
 		return j([Knob, {
@@ -36,7 +36,7 @@ class OscBar extends PureComponent {
 		}]);
 	}
 	render() {
-		return j({div: {className: "osc-row"}}, [
+		return j({div: "osc-row"}, [
 			j([Roller, {
 				className: "osc-roller",
 				items: ["sine", "square", "sawtooth", "triangle"],
@@ -81,8 +81,8 @@ class OscEditor extends Component {
 	render() {
 		const wave = draw3xOsc(this.props.oscillator);
 
-		return j({div: {className: "editor"}}, [
-			j({div: {className: "top-bar"}}, [
+		return j({div: "editor"}, [
+			j({div: "top-bar"}, [
 				j({img: {className: "waveform", src: wave}}),
 				j([Knob, {
 					className: "gain-knob",
@@ -93,11 +93,11 @@ class OscEditor extends Component {
 					onChange: this.setGain,
 				}]),
 			]),
-			j({div: {className: "editor-content"}}, [
-				j({div: {className: "osc-row"}}, [
-					j({span: {className: "column-title"}}, "waveform"),
-					j({span: {className: "column-title"}}, "octave"),
-					j({span: {className: "column-title"}}, "mix ratio"),
+			j({div: "editor-content"}, [
+				j({div: "osc-row"}, [
+					j({span: "column-title"}, "waveform"),
+					j({span: "column-title"}, "octave"),
+					j({span: "column-title"}, "mix ratio"),
 				]),
 				j([OscBar, {
 					settings: this.props.oscillator.osc1,
